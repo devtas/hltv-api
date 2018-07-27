@@ -4,6 +4,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+String.prototype.toDateFromDatetime = function() {
+    var parts = this.split(/[- :]/);
+    return new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+};
+
 var _request = require('request');
 
 var _request2 = _interopRequireDefault(_request);
@@ -55,12 +60,6 @@ function Upcoming(callback) {
 
     $(days).each(function (i, element) {
       matchDate = $(element).find('.standard-headline').text();
-
-      dayResults = {
-        date: matchDate,
-        matches: []
-      };
-
       matches = $(element).find('.upcoming-match');
 
       $(matches).each(function (m, match) {
@@ -71,6 +70,9 @@ function Upcoming(callback) {
         var team2 = el.children('.team-cell').last();
         var matchId = $(el).attr('href');
         var maps = el.find('.map-text');
+        var dateTime = matchDate + ' ' + time + ':00';
+        var date = dateTime.toDateFromDatetime();
+        date.setHours( date.getHours() - 5 ); // Brazil Timezone
 
         var objData = {
           event: {
@@ -87,13 +89,13 @@ function Upcoming(callback) {
             crest: team2.find('img').attr('src')
           },
           matchId: matchId,
-          date: matchDate,
-          time: time
+          date: date.getFullYear() + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + ("0" + date.getDate()).slice(-2),
+          time: date.getHours() + ':' + ("0" + date.getMinutes()).slice(-2) + ':00'
         };
-        dayResults.matches.push(objData);
+        results.push(objData);
       });
 
-      results.push(dayResults);
+      // results.push(dayResults);
     });
 
     callback(results, error);
