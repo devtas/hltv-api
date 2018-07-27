@@ -87,7 +87,8 @@ function Upcoming(callback) {
             crest: team2.find('img').attr('src')
           },
           matchId: matchId,
-          date: matchDate
+          date: matchDate,
+          time: time
         };
         dayResults.matches.push(objData);
       });
