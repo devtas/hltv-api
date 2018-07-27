@@ -1,5 +1,9 @@
 'use strict';
 
+require('babel-register')({
+   presets: [ 'es2015' ]
+});
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
