@@ -19,6 +19,9 @@ var _cheerio2 = _interopRequireDefault(_cheerio);
 
 var _config = require('./config');
 
+var moment = require('moment');
+// moment.locale('pt-BR');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -68,11 +71,11 @@ function Upcoming(callback) {
         var time = el.children('.time').children('.time').text();
         var team1 = el.children('.team-cell').first();
         var team2 = el.children('.team-cell').last();
-        var matchId = $(el).attr('href');
+        var matchId = $(match).attr('href');
         var maps = el.find('.map-text');
         var dateTime = matchDate + ' ' + time + ':00';
-        var date = dateTime.toDateFromDatetime();
-        date.setHours( date.getHours() - 5 ); // Brazil Timezone
+        var date = moment(dateTime);
+        date.set('hour', (date.get('hour') - 5));
 
         var objData = {
           event: {
@@ -89,13 +92,11 @@ function Upcoming(callback) {
             crest: team2.find('img').attr('src')
           },
           matchId: matchId,
-          date: date.getFullYear() + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + ("0" + date.getDate()).slice(-2),
-          time: date.getHours() + ':' + ("0" + date.getMinutes()).slice(-2) + ':00'
+          date: date.format('YYYY-MM-DD'),
+          time: date.format('HH:mm:ss')
         };
         results.push(objData);
       });
-
-      // results.push(dayResults);
     });
 
     callback(results, error);
