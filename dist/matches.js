@@ -1,6 +1,6 @@
-import request from 'request';
-import cheerio from 'cheerio';
-import { CONFIG } from './config';
+const request = require('request');
+const cheerio = require('cheerio');
+const CONFIG = require('./config');
 
 /**
  * Scraping matches
