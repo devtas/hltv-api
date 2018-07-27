@@ -1,20 +1,6 @@
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _request = require('request');
-
-var _request2 = _interopRequireDefault(_request);
-
-var _xml2js = require('xml2js');
-
-var _config = require('./config');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+import request from 'request';
+import { parseString } from 'xml2js';
+import { CONFIG } from './config';
 
 /**
  * Available RSS links
@@ -22,41 +8,38 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @export
  * @class RSS
  */
-var RSS =
+export default class RSS {
 
-/**
- * Creates an instance of RSS.
- * 
- * @param {string} type 
- * @param {any} callback 
- * 
- * @memberOf RSS
- */
-function RSS(type, callback) {
-  _classCallCheck(this, RSS);
+  /**
+   * Creates an instance of RSS.
+   * 
+   * @param {string} type 
+   * @param {any} callback 
+   * 
+   * @memberOf RSS
+   */
+  constructor(type, callback) {
+    const URL = `/${type}`;
+    const uri = `${CONFIG.BASE}${CONFIG.RSS}${URL}`;
 
-  var URL = '/' + type;
-  var uri = '' + _config.CONFIG.BASE + _config.CONFIG.RSS + URL;
+    request({ uri }, (error, response, body) => {
+      parseString(body, (err, result) => {
+        const length = result.rss.channel[0].item.length;
+        let rss = [];
 
-  (0, _request2.default)({ uri: uri }, function (error, response, body) {
-    (0, _xml2js.parseString)(body, function (err, result) {
-      var length = result.rss.channel[0].item.length;
-      var rss = [];
+        for (let i = 0; i < length; i++) {
+          const obj = {
+            title       : result.rss.channel[0].item[i].title[0],
+            description : result.rss.channel[0].item[i].description[0],
+            link        : result.rss.channel[0].item[i].link[0],
+            date        : result.rss.channel[0].item[i].pubDate[0]
+          };
 
-      for (var i = 0; i < length; i++) {
-        var obj = {
-          title: result.rss.channel[0].item[i].title[0],
-          description: result.rss.channel[0].item[i].description[0],
-          link: result.rss.channel[0].item[i].link[0],
-          date: result.rss.channel[0].item[i].pubDate[0]
-        };
+          rss.push(obj);
+        }
 
-        rss.push(obj);
-      }
-
-      callback(rss, err);
+        callback(rss, err);
+      });
     });
-  });
-};
-
-exports.default = RSS;
+  }
+}

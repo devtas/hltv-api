@@ -19,72 +19,84 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- * Scraping results
+ * Scraping matches
  * 
  * @export
- * @class Results
+ * @class Upcoming
  */
-var Results =
+var Upcoming =
 
 /**
- * Creates an instance of Results.
+ * Creates an instance of Upcoming.
  * 
  * @param {any} callback 
  * 
- * @memberOf Results
+ * @memberOf Upcoming
  */
-function Results(callback) {
-  _classCallCheck(this, Results);
+function Upcoming(callback) {
+  _classCallCheck(this, Upcoming);
 
-  var uri = '' + _config.CONFIG.BASE + _config.CONFIG.RESULTS;
+  var uri = _config.CONFIG.BASE + '/' + _config.CONFIG.UPCOMING;
 
   (0, _request2.default)({ uri: uri }, function (error, response, body) {
+
     var $ = _cheerio2.default.load(body, {
       normalizeWhitespace: true
     });
 
-    var resultSublists = $('.results-all .results-sublist'),
+    var results = [],
+        matchesContent = $('.contentCol').find('.upcoming-matches'),
+        days,
+        dayResults,
         matchDate,
-        resultElements,
-        results = [];
+        matches;
 
-    $(resultSublists).each(function (s, list) {
-      resultElements = $(list).find('.result-con');
-      matchDate = $(list).find('.standard-headline').text();
-      matchDate = matchDate.replace('Results for ', '');
+    days = $(matchesContent).find('.match-day');
 
-      $(resultElements).each(function (i, element) {
-        var el = $(element).find('tr');
+    $(days).each(function (i, element) {
+      matchDate = $(element).find('.standard-headline').text();
+
+      dayResults = {
+        date: matchDate,
+        matches: []
+      };
+
+      matches = $(element).find('.upcoming-match');
+
+      $(matches).each(function (m, match) {
+        var el = $(match).find('tr');
+        var event = el.children('.event');
+        var time = el.children('.time').children('.time').text();
         var team1 = el.children('.team-cell').first();
         var team2 = el.children('.team-cell').last();
-        var matchId = $(element).children('a').attr('href');
+        var matchId = $(el).attr('href');
         var maps = el.find('.map-text');
-        var result1 = el.find('.result-score').children('span').first();
-        var result2 = el.find('.result-score').children('span').last();
 
         var objData = {
-          event: el.find('.event-name').text(),
+          event: {
+            name: event.find('.event-name').text(),
+            crest: event.find('.event-logo').attr('src')
+          },
           maps: maps.text(),
           team1: {
             name: team1.find('.team').text(),
-            crest: team1.find('img').attr('src'),
-            result: parseInt(result1.text())
+            crest: team1.find('img').attr('src')
           },
           team2: {
             name: team2.find('.team').text(),
-            crest: team2.find('img').attr('src'),
-            result: parseInt(result2.text())
+            crest: team2.find('img').attr('src')
           },
           matchId: matchId,
           date: matchDate
         };
-
-        results.push(objData);
+        dayResults.matches.push(objData);
       });
+
+      results.push(dayResults);
     });
 
     callback(results, error);
   });
 };
 
-exports.default = Results;
+exports.default = Upcoming;
